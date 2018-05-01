@@ -1,8 +1,15 @@
 package com.example.jolysylvain.squadup;
 
+import android.content.Context;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.NavigationView;
+import android.support.design.widget.Snackbar;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
@@ -30,11 +37,19 @@ public class RegisterActivity extends AppCompatActivity {
     EditText password;
     EditText passwordConfirmed;
 
+    Context context;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
+
+        this.context = this;
+
         setContentView(R.layout.activity_register);
+
+
     }
 
     public void register(View v) {
@@ -43,12 +58,6 @@ public class RegisterActivity extends AppCompatActivity {
         email = findViewById(R.id.register_email);
         password = findViewById(R.id.register_password);
         passwordConfirmed = findViewById(R.id.register_passwordConfirmed);
-
-
-        //error
-        //TODO faire deux dialog en fonction du retour de checker pour voir les erreurs a faire aussi
-        DialogManager dialogManager = new DialogManager("Veuillez vérifier vos champs !", "Erreur lors de l'enregistrement", this);
-        dialogManager.generateDialog().show();
 
 
         //TODO move this call API is just a test
@@ -60,7 +69,11 @@ public class RegisterActivity extends AppCompatActivity {
         body.put("password", password.getText().toString());
         body.put("passwordConfirmed", passwordConfirmed.getText().toString());
 
-        client.post("http://10.0.2.2:1337/api/user/register", body, new AsyncHttpResponseHandler() {
+
+            //10.0.2.2 for emulator
+            //for real device => ipconfig and copy IPv4
+            client.post("http://192.168.1.17:8080/api/user/register", body, new AsyncHttpResponseHandler() {
+
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
 
@@ -68,11 +81,13 @@ public class RegisterActivity extends AppCompatActivity {
                     JSONObject json = new JSONObject(
                             new String(responseBody));
                     System.out.println(json);
-                    System.out.print("status code" + statusCode);
 
-                    //TODO get token and store into Storage android
+                    DialogManager dialogManager = new DialogManager(json.toString(), "Erreur lors de l'enregistrement", context);
+                    dialogManager.generateDialog().show();
+
 
                 } catch (JSONException e) {
+                    System.out.println("ERROR");
                     e.printStackTrace();
                 }
             }
